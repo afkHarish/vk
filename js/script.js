@@ -21,14 +21,17 @@ const workItems = [
     {
         title: "Long Form Content",
         description: "In-depth storytelling and extended content that captures the complete narrative",
-        driveLink: "https://drive.google.com/file/d/1pHnShP32RqL7c1YJwAfBHrymvJOOULUT/view?usp=drivesdk",
+        driveLink: "https://drive.google.com/file/d/1MsEYRFO0y62M99uqc4-kZ9uvFrCE2D_m/view?usp=drivesdk",
+        extraLinks: [
+            "https://drive.google.com/file/d/1KfdQ9IqHmUIlJG3s1xCjIawV819m4nhw/view?usp=drivesdk"
+        ],
         thumbnail: "https://images.unsplash.com/photo-1601506521793-dc748fc80b67?auto=format&fit=crop&w=800&q=80",
         category: "long-form"
     },
     {
         title: "Short Form Content",
         description: "Engaging social media content, reels, and short videos that capture attention instantly",
-        driveLink: "https://drive.google.com/file/d/1tZq6s5zF0B8V14EE5GW0NhWbZuJdW9KB/view?usp=drivesdk",
+        driveLink: "https://drive.google.com/file/d/1jwiskC1HwILn5MYGa_XisG6bxbpe8vr5/view?usp=drivesdk",
         thumbnail: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=800&q=80",
         category: "short-form"
     },
@@ -100,16 +103,40 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     });
 });
 
+// Add modal HTML to the document body
+const modalHtml = `
+  <div id="videoModal" class="modal" style="display:none;position:fixed;z-index:2000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);justify-content:center;align-items:center;">
+    <div class="modal-content" style="background:#fff;padding:2rem;border-radius:12px;max-width:90vw;max-height:90vh;overflow:auto;position:relative;">
+      <span id="closeModal" style="position:absolute;top:10px;right:20px;font-size:2rem;cursor:pointer;">&times;</span>
+      <h2 style="margin-bottom:1rem;">Project Videos</h2>
+      <div id="modalLinks"></div>
+    </div>
+  </div>
+`;
+document.body.insertAdjacentHTML('beforeend', modalHtml);
+const videoModal = document.getElementById('videoModal');
+const closeModal = document.getElementById('closeModal');
+const modalLinks = document.getElementById('modalLinks');
+closeModal.onclick = () => { videoModal.style.display = 'none'; };
+window.onclick = (e) => { if (e.target === videoModal) videoModal.style.display = 'none'; };
+
 workItems.forEach((item, index) => {
     const workItem = document.createElement('div');
     workItem.className = 'work-item';
     workItem.dataset.category = item.category;
     workItem.style.animationDelay = `${index * 0.2}s`;
+    let linksHtml = '';
+    // Only one button for projects with multiple videos
+    if (item.extraLinks && Array.isArray(item.extraLinks)) {
+        linksHtml = `<button class="cta-button" data-index="${index}">View Project</button>`;
+    } else {
+        linksHtml = `<a href="${item.driveLink}" target="_blank" class="cta-button">View Project</a>`;
+    }
     workItem.innerHTML = `
         <div class="work-item-image">
             <img src="${item.thumbnail}" alt="${item.title}" loading="lazy">
             <div class="work-item-overlay">
-                <a href="${item.driveLink}" target="_blank" class="cta-button">View Project</a>
+                ${linksHtml}
             </div>
         </div>
         <div class="work-item-content">
@@ -118,6 +145,14 @@ workItems.forEach((item, index) => {
         </div>
     `;
     workGrid.appendChild(workItem);
+    // Add event listener for modal button if extraLinks exist
+    if (item.extraLinks && Array.isArray(item.extraLinks)) {
+        workItem.querySelector('button.cta-button').onclick = function() {
+            let allLinks = [item.driveLink, ...item.extraLinks];
+            modalLinks.innerHTML = allLinks.map((link, idx) => `<a href="${link}" target="_blank" style="display:block;margin-bottom:1rem;font-size:1.1rem;color:#4f46e5;">Video ${idx+1}</a>`).join('');
+            videoModal.style.display = 'flex';
+        };
+    }
 });
 
 // Smooth scrolling for navigation links
